@@ -26,6 +26,12 @@ nav {
   align-items: center;
   margin-bottom: 16px;
 }
+[hidden] {
+  display: none !important;
+}
+#pagination {
+  margin-top: 20px;
+}
 input,
 button {
   padding: 12px;

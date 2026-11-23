@@ -1,5 +1,6 @@
 window.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://punkapi.dev/api/v3";
+  const TAILLE_PAGE = 10;
   const catalogue = document.querySelector("#catalogue");
   const statut = document.querySelector("#statut");
   const formulaire = document.querySelector("#recherche-form");
@@ -7,6 +8,21 @@ window.addEventListener("DOMContentLoaded", () => {
   const boutonCharger = document.querySelector("#charger");
   const boutonAleatoire = document.querySelector("#aleatoire");
   const boutons = document.querySelectorAll("button");
+  const pagination = document.querySelector("#pagination");
+  const pagePrecedente = document.querySelector("#page-precedente");
+  const pageSuivante = document.querySelector("#page-suivante");
+  const numeroPage = document.querySelector("#numero-page");
+  let pageCourante = 1;
+
+  function urlPage(page) {
+    return `${API_BASE}/beers?page=${page}&per_page=${TAILLE_PAGE}`;
+  }
+
+  async function obtenirBieres(url) {
+    const response = await fetch(url, { cache: "no-store" });
+    if (!response.ok) throw new Error(`Erreur HTTP ${response.status}`);
+    return response.json();
+  }
 
   function creerLigne(libelle, valeur) {
     const p = document.createElement("p");
@@ -60,6 +76,7 @@ window.addEventListener("DOMContentLoaded", () => {
       btn.disabled = true;
     });
     catalogue.replaceChildren();
+    pagination.hidden = true;
     statut.classList.remove("erreur");
     statut.textContent = message;
   }
@@ -76,19 +93,30 @@ window.addEventListener("DOMContentLoaded", () => {
     console.error(error);
   }
 
-  async function chargerCatalogue() {
+  async function chargerCatalogue(page = 1) {
     preparerRequete("Chargement du catalogue...");
+    let dernierePage = false;
     try {
-      const response = await fetch(`${API_BASE}/beers?page=1&per_page=10`);
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
+      let bieres = await obtenirBieres(urlPage(page));
+      if (!Array.isArray(bieres))
+        throw new Error("Réponse du catalogue invalide.");
+      if (bieres.length === 0 && page > 1) {
+        page--;
+        dernierePage = true;
+        bieres = await obtenirBieres(urlPage(page));
       }
-      const bieres = await response.json();
+      pageCourante = page;
       afficherBieres(bieres);
+      if (dernierePage)
+        statut.textContent = "Vous avez atteint la dernière page du catalogue.";
+      numeroPage.textContent = `Page ${pageCourante}`;
+      pagination.hidden = false;
     } catch (error) {
       afficherErreur(error);
     } finally {
       finirRequete();
+      pagePrecedente.disabled = pageCourante <= 1;
+      pageSuivante.disabled = dernierePage;
     }
   }
 
@@ -100,11 +128,7 @@ window.addEventListener("DOMContentLoaded", () => {
         page: 1,
         per_page: 10,
       });
-      const response = await fetch(`${API_BASE}/beers?${param}`);
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
-      }
-      const bieres = await response.json();
+      const bieres = await obtenirBieres(`${API_BASE}/beers?${param}`);
       afficherBieres(bieres);
     } catch (error) {
       afficherErreur(error);
@@ -119,22 +143,22 @@ window.addEventListener("DOMContentLoaded", () => {
   async function chargerAleatoire() {
     preparerRequete("Chargement d'une bière aléatoire...");
     try {
-      const response = await fetch(`${API_BASE}/beers/random`);
-      if (!response.ok) {
-        throw new Error(`Erreur HTTP ${response.status}`);
-      }
-      const data = await response.json();
+      const data = await obtenirBieres(`${API_BASE}/beers/random`);
       afficherBieres(Array.isArray(data) ? data : [data]);
     } catch (error) {
       afficherErreur(error);
     } finally {
       finirRequete();
     }
-    await wait(50);
-    chargerAleatoire();
   }
 
-  boutonCharger.addEventListener("click", chargerCatalogue);
+  boutonCharger.addEventListener("click", () => chargerCatalogue());
+  pagePrecedente.addEventListener("click", () =>
+    chargerCatalogue(pageCourante - 1),
+  );
+  pageSuivante.addEventListener("click", () =>
+    chargerCatalogue(pageCourante + 1),
+  );
   boutonAleatoire.addEventListener("click", chargerAleatoire);
 
   formulaire.addEventListener("submit", (event) => {
