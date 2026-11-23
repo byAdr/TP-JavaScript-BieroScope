@@ -1,6 +1,6 @@
 window.addEventListener("DOMContentLoaded", () => {
   const API_BASE = "https://punkapi.dev/api/v3";
-  const TAILLE_PAGE = 80;
+  const TAILLE_PAGE = 10;
 
   const catalogue = document.querySelector("#catalogue");
   const statut = document.querySelector("#statut");
