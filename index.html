@@ -6,7 +6,9 @@
     <title>BieroScope</title>
     <link rel="manifest" href="./manifest.webmanifest" />
     <link rel="stylesheet" href="style.css" />
+    <script src="stockage.js"></script>
     <script src="app.js"></script>
+    <link rel="sw" href="./sw.js" />
   </head>
   <body>
     <main>
@@ -23,6 +25,8 @@
       <nav aria-label="Actions du catalogue">
         <button id="charger" type="button">Charger le catalogue</button>
         <button id="aleatoire" type="button">Fiche au hasard</button>
+        <a class="ajouter-biere" href="./add-beer.html"><span aria-hidden="true">🍺</span> Ajouter une bière</a>
+        <button id="install" type="button" hidden>Installer BieroScope</button>
       </nav>
       <p id="statut" role="status" aria-live="polite"></p>
       <section id="catalogue" aria-label="Fiches du catalogue"></section>

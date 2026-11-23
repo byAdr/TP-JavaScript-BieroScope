@@ -33,6 +33,7 @@ nav {
   margin-top: 20px;
 }
 input,
+.ajouter-biere,
 button {
   padding: 12px;
   font: inherit;
@@ -41,11 +42,15 @@ button {
 input {
   border: 1px solid #82755f;
 }
+.ajouter-biere,
 button {
   background: #6e4211;
   color: white;
   border: 0;
   cursor: pointer;
+}
+.ajouter-biere {
+  text-decoration: none;
 }
 button:disabled {
   opacity: 0.5;
